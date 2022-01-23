@@ -1,0 +1,337 @@
+//Master Arduino
+#include <Wire.h> 
+int slaveAddress = 9;
+#include <LiquidCrystal.h>
+//LED STUFF
+int latchPin = 3;
+int clockPin = 4;
+int dataPin = 2;//defined all pins for buttons
+const int button1 = A2;
+int button2 = A3;
+int button3 = A4;
+int button4 = A1;
+byte leds = 0;
+int buttonState = 0;//button1
+int buttonState2 = 0;//button2
+int buttonState3 = 0;//button3
+int buttonState4 = 0;//button4
+
+//Keypad stuff
+#include <Keypad.h>
+#include <Servo.h>
+
+//LCD Stuff
+char array[10]="0";//arrays for empty values to send to the LCD
+char array2[10]="0";
+char array3[10]="0";
+char array4[10]="0";
+void setup(){//LED Stuff
+  pinMode(latchPin, OUTPUT);
+  pinMode(dataPin, OUTPUT);  
+  pinMode(clockPin, OUTPUT);
+  pinMode(button1, INPUT);//sets button pins to input mode
+  pinMode(button2, INPUT);
+  pinMode(button3, INPUT);
+  pinMode(button4, INPUT);
+  //Keypad Stuff
+
+  
+  //LCD Stuff
+  Serial.begin(9600); // start serial for output
+
+}
+void loop() 
+{
+  digitalRead(button1);//reads all buttons
+  digitalRead(button2);
+  digitalRead(button3);
+  digitalRead(button4);
+  leds = 0;
+  buttonState = digitalRead(button1);// defines the states of all of the buttons
+  buttonState2 = digitalRead(button2);
+  buttonState3 = digitalRead(button3);
+  buttonState4 = digitalRead(button4);
+
+//Shift register values pushed for all values of all buttons
+//button1
+  if (buttonState == 1){
+   updateShiftRegister();//updates value for the respective LED using the shift register function
+  bitSet(leds, 0);
+  updateShiftRegister();
+    
+  }
+  else{updateShiftRegister();
+  bitClear(leds, 0);
+  updateShiftRegister();}
+//button2
+  if (buttonState2 == 1){
+    updateShiftRegister();
+  bitSet(leds, 1);
+  updateShiftRegister();  
+  }
+  else{
+  updateShiftRegister();
+  bitClear(leds, 1);
+  updateShiftRegister();
+  }
+//button3
+  if (buttonState3 == 1){
+    updateShiftRegister();
+  bitSet(leds, 2);
+  updateShiftRegister();  
+  }
+  else{
+  updateShiftRegister();
+  bitClear(leds, 2);
+  updateShiftRegister();
+  }  
+//button4
+  if (buttonState4 == 1){
+    updateShiftRegister();
+  bitSet(leds, 3);
+  updateShiftRegister();  
+  }
+  else{
+  updateShiftRegister();
+  bitClear(leds, 3);
+  updateShiftRegister();
+  }  
+
+  
+//LCD Stuff
+//button1
+  if (buttonState == 0){
+int value=1; //this would be much more exciting if it was a sensor value
+  
+  itoa(value, array, 10); //Turn value into a character array
+  Serial.write(array, 4);
+delay(1000);
+  }
+//button2
+  if (buttonState2 == 0){
+int value2=2; 
+  
+  itoa(value2, array2, 10); //Turn value into a character array
+  Serial.write(array2, 4);
+delay(1000);
+  }
+//button3
+  if (buttonState3 == 0){
+int value3=3; 
+  
+  itoa(value3, array3, 10); //Turn value into a character array
+  Serial.write(array3, 4);
+delay(1000);
+  }
+//button4
+  if (buttonState4 == 0){
+int value4=4; 
+  
+  itoa(value4, array4, 10); //Turn value into a character array
+  Serial.write(array4, 4);
+delay(1000);
+  }  
+}
+  
+
+
+
+void updateShiftRegister()//shifts values out to the shift register using the latch pin
+{
+   digitalWrite(latchPin, LOW);
+   shiftOut(dataPin, clockPin, LSBFIRST, leds);
+   digitalWrite(latchPin, HIGH);
+}
+
+
+
+
+LCD Arduino
+char array[10]; //Initialized variable to store recieved data
+char array2[10];
+char array3[10];
+char array4[10];
+#include <LiquidCrystal.h>
+
+// initialize the library with the numbers of the interface pins
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+void setup() {
+  // Begin the Serial at 9600 Baud
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+  Serial.begin(9600);
+}
+
+void loop() {
+  //button1
+  int i=0;
+
+  if (Serial.available()) {
+    delay(100); //allows all serial sent to be received together
+    while(Serial.available() && i<4) {
+      array[i++] = Serial.read();
+    }
+    array[i++]='\0';
+  }
+
+  if(i>0) {
+    Serial.print(array);
+    lcd.print(array);
+  }
+  //button2
+  int ii=0;
+
+  if (Serial.available()) {
+    delay(100); //allows all serial sent to be received together
+    while(Serial.available() && i<4) {
+      array2[ii++] = Serial.read();//reads serial data this is repeated for all buttons
+    }
+    array2[ii++]='\0';
+  }
+
+  if(ii>0) {
+    Serial.print(array2);//prints new array values this is repeated for all buttons
+    lcd.print(array2);
+  }
+  //button3
+int iii=0;
+
+  if (Serial.available()) {
+    delay(100); //allows all serial sent to be received together
+    while(Serial.available() && i<4) {
+      array3[iii++] = Serial.read();
+    }
+    array3[iii++]='\0';
+  }
+
+  if(iii>0) {
+    Serial.print(array3);
+    lcd.print(array3);
+  }
+//button4
+  int iiii=0;
+
+  if (Serial.available()) {
+    delay(100); //allows all serial sent to be received together
+    while(Serial.available() && i<4) {
+      array4[iiii++] = Serial.read();
+    }
+    array4[iiii++]='\0';
+  }
+
+  if(iiii>0) {
+    Serial.print(array4);
+    lcd.print(array4);
+  }
+  
+  
+  
+  
+  
+  
+  
+}
+
+Keypad Arduino
+#include <Keypad.h>
+#include <Servo.h>
+
+// Set up keypad variables:
+int numKeyPresses = 0;            // Track number of key presses
+int maxKeyPresses = 3;            // Only allow 3 digits to be entered
+int keyPresses[3] = { 0, 0, 0 };  // Initialize an empty array to hold input
+const byte numRows= 4;            // # of rows on the keypad
+const byte numCols= 4;            // # of columns on the keypad
+
+// Set up servo variables:
+int angle = 0;                    // Angle in degrees to position servo [0-180]
+int angleMultiplier = 1;          // Multiply by each digit, divide by 10 on each input
+Servo servo;                      // Create the servo object
+int servoPin = 3;                 // Set the servo pin
+
+char keymap[numRows][numCols]=    // Setup the keypad layout
+{
+  {'1', '2', '3', 'A'}, 
+  {'4', '5', '6', 'B'}, 
+  {'7', '8', '9', 'C'},
+  {'*', '0', '#', 'D'},
+};
+
+// Connect keypad ROW0, ROW1, ROW2 and ROW3 to these Arduino pins.
+byte rowPins[numRows] = { 11, 10, 9, 8 }; 
+
+// Connect keypad COL0, COL1 and COL2 to these Arduino pins.
+byte colPins[numCols] = { 7, 6, 5, 4 };
+
+// Create the Keypad
+Keypad kpd = Keypad( makeKeymap( keymap ), rowPins, colPins, numRows, numCols );
+
+void setup()
+{
+  Serial.begin(9600);           // Start up serial comms
+  resetAngleMultiplier();       // Start accepting numeric input
+  servo.attach( servoPin );     // Attaches the servo to the servo object
+  
+} // setup
+
+
+void loop()
+{
+  char key = kpd.getKey();
+  if( key )                     // Check for a valid key
+  {
+    if( key >= 0x41 && key <= 0x44 || key == 0x23 || key == 0x2A )
+    {
+      resetInput();
+      Serial.println( "ERROR: Numeric input only!" );
+    }                           // ^ if invalid entry
+    else                        // Else, entry is valid:
+    {
+      angle += angleMultiplier * ( key - 0x30 );
+      angleMultiplier /= 10;
+      
+      if( numKeyPresses == maxKeyPresses - 1 )
+      {
+        setServo( angle );            // Use the input to turn servo
+        resetInput();
+      }
+      else
+      {
+        numKeyPresses++;
+      }
+      Serial.println( (String) angle );
+    }
+        
+  } // if( key )
+
+} // loop
+
+
+void setServo( int angle )
+{
+  if( angle > 180 )
+    angle = 180;
+  Serial.println( "Setting servo to " + (String) angle + " degrees." );
+  servo.write( angle );          // Set the servo position
+  
+} // setServo
+
+
+void resetAngleMultiplier()
+{
+  angleMultiplier = 1;
+   for( int i = 0; i < maxKeyPresses - 1; i++ )
+    angleMultiplier *= 10;
+    
+} // resetAngleMultiplier
+
+
+void resetInput()
+{
+  resetAngleMultiplier();       // Reset the numeric input
+  angle = 0;                    // Reset the angle
+  numKeyPresses = 0;            // Reset number of key presses
+}
+
+
+
